@@ -1,74 +1,112 @@
-package iterative_deepening_dfs.java.simple;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 
 /**
- * Used to perform the Iterative Deepening Depth-First Search (DFS) Algorithm to find the shortest path from a start to a target node.
+ *
+ * @author Joel Joseph
  */
-public class IterativeDeepeningDFS {
-    private static boolean bottomReached = false; // Variable to keep track if we have reached the bottom of the tree
+
+import java.util.InputMismatchException;
+import java.util.Scanner;
+import java.util.Stack;
+
+public class IterativeDeepening {
 
     /**
-     * Implementation of iterative deepening DFS (depth-first search).
-     * Given a start node, this returns the node in the tree below the start node with the target value (or null if it doesn't exist)
-     * Runs in O(n), where n is the number of nodes in the tree, or O(b^d), where b is the branching factor and d is the depth.
-     * @param start  the node to start the search from
-     * @param target the value to search for
-     * @return The node containing the target value or null if it doesn't exist.
+     * @param args the command line arguments
      */
-    public static Node iterativeDeepeningDFS(Node start, int target) {
-        // Start by doing DFS with a depth of 1, keep doubling depth until we reach the "bottom" of the tree or find the node we're searching for
-        int depth = 1;
-        while (!bottomReached) {
-            bottomReached = true; // One of the "end nodes" of the search with this depth has to still have children and set this to false again
-            Node result = iterativeDeepeningDFS(start, target, 0, depth);
-            if (result != null) {
-                // We've found the goal node while doing DFS with this max depth
-                return result;
-            }
-
-            // We haven't found the goal node, but there are still deeper nodes to search through
-            depth *= 2;
-            System.out.println("Increasing depth to " + depth);
-        }
-
-        // Bottom reached is true.
-        // We haven't found the node and there were no more nodes that still have children to explore at a higher depth.
-        return null;
+    private Stack<Integer> stack;
+    private int numberOfNodes;
+    private int depth;
+    private int maxDepth;
+    private boolean goalFound = false;
+ 
+    public IterativeDeepening()
+    {
+        stack = new Stack<Integer>();
     }
-
-    private static Node iterativeDeepeningDFS(Node node, int target, int currentDepth, int maxDepth) {
-        System.out.println("Visiting Node " + node.value);
-        if (node.value == target) {
-            // We have found the goal node we we're searching for
-            System.out.println("Found the node we're looking for!");
-            return node;
+ 
+    public void iterativeDeeping(int adjacencyMatrix[][], int destination)
+    {
+        numberOfNodes = adjacencyMatrix[1].length - 1;
+        while (!goalFound)
+        {
+            depthLimitedSearch(adjacencyMatrix, 1, destination);
+            maxDepth++;
         }
-
-        if (currentDepth == maxDepth) {
-            System.out.println("Current maximum depth reached, returning...");
-            // We have reached the end for this depth...
-            if (node.children.length > 0) {
-                //...but we have not yet reached the bottom of the tree
-                bottomReached = false;
-            }
-            return null;
-        }
-
-        // Recurse with all children
-        for (int i = 0; i < node.children.length; i++) {
-            Node result = iterativeDeepeningDFS(node.children[i], target, currentDepth + 1, maxDepth);
-            if (result != null) {
-                // We've found the goal node while going down that child
-                return result;
-            }
-        }
-
-        // We've gone through all children and not found the goal node
-        return null;
+        System.out.println("\nGoal Found at depth " + depth);
     }
-}
-
-// used to store a tree datastructure
-class Node {
-    Node[] children;
-    int value;
+ 
+    private void depthLimitedSearch(int adjacencyMatrix[][], int source, int goal)
+    {
+        int element, destination = 1;
+        int[] visited = new int[numberOfNodes + 1];
+        stack.push(source);
+        depth = 0;
+        System.out.println("\nAt Depth " + maxDepth);
+        System.out.print(source + "\t");
+ 
+        while (!stack.isEmpty())
+        {
+            element = stack.peek();
+            while (destination <= numberOfNodes)
+            {
+                if (depth < maxDepth)
+                {
+                    if (adjacencyMatrix[element][destination] == 1)
+                    {
+                        stack.push(destination);
+                        visited[destination] = 1;
+                        System.out.print(destination + "\t");
+                        depth++;
+                        if (goal == destination)
+                        { 
+                            goalFound = true;
+                            return;
+                        }
+                        element = destination;
+                        destination = 1;
+                        continue;
+                    }
+                } else 
+                {
+                    break;
+                }
+                destination++;
+            }
+            destination = stack.pop() + 1;
+            depth--;
+        }
+    }
+ 
+    public static void main(String args[]) {
+        // TODO code application logic here
+        int number_of_nodes, destination;
+        Scanner scanner = null;
+        try
+        {
+            System.out.println("Enter the number of nodes in the graph");
+            scanner = new Scanner(System.in);
+            number_of_nodes = scanner.nextInt();
+ 
+            int adjacency_matrix[][] = new int[number_of_nodes + 1][number_of_nodes + 1];   			        
+            System.out.println("Enter the adjacency matrix");
+            for (int i = 1; i <= number_of_nodes; i++)
+                for (int j = 1; j <= number_of_nodes; j++)
+                    adjacency_matrix[i][j] = scanner.nextInt();
+ 
+            System.out.println("Enter the destination for the graph");
+            destination = scanner.nextInt();
+ 
+            IterativeDeepening iterativeDeepening = new IterativeDeepening();
+            iterativeDeepening.iterativeDeeping(adjacency_matrix, destination);
+        }catch (InputMismatchException inputMismatch)
+        {
+            System.out.println("Wrong Input format");
+        }
+        scanner.close();
+    }
 }
